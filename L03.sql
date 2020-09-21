@@ -1,44 +1,52 @@
-select ordernum, totalUSD
-from orders;
-
-select lastname, homeCity
+-- query #1
+select *
 from people
-where prefix='Dr.';
-
-select prodId, name, priceUSD
-from products
-where qtyOnHand >1007;
-
-select firstName, homeCity 
-from people 
-where '1949-12-31' < DOB 
-and DOB < '1960-1-1';
-
-select prefix, lastName
+where pid in (select pid from customers);
+-- query #2
+select *
 from people
-where prefix !='Mr.';
-
+where pid in (select pid from agents);
+-- query #3
 select *
-from products
-where city != 'Dallas'
-and city != 'Duluth'
-and priceUSD >= 3;
-
+from people
+where pid in (select pid from agents)
+and pid in (select pid from customers);
+-- query #4
 select *
+from people
+where pid not in (select pid from agents)
+and pid not in (select pid from customers);
+-- query #5
+select custId
 from orders
-where dateOrdered > '2020-02-28'
-and dateOrdered < '2020-04-01';
-
-select *
+where prodId = 'p01'
+or prodId = 'p07';
+-- query #6
+select distinct custId
 from orders
-where dateOrdered >= '2020-02-01'
-and dateOrdered < '2020-03-01'
-and totalUSD >= 20000;
-
-select *
+where custId in (select custId from orders where prodId = 'p01')
+= custId in (select custId from orders where prodId = 'p07')
+order by custId desc;
+-- query #7
+select distinct firstName, lastName
+from people
+where pid in (select agentId from orders where prodId = 'p05')
+or pid in (select agentId from orders where prodId = 'p07')
+order by lastName desc;
+-- query #8
+select homeCity, DOB
+from people
+where pid in (select agentId from orders where custId = 001)
+order by homeCity asc;
+-- query #9
+select prodId
 from orders
-where custId = 007;
-
-select *
-from orders
-where custId = 005;
+where agentId in 
+(select agentId from orders where (custId in (select pid from people where homeCity = 'Toronto')))
+order by prodId desc;
+-- query #10
+select lastName, homeCity
+from people
+where pid in 
+(select custId from orders where (agentId in (select pid from people where homeCity = 'Teaneck')))
+or pid in (select custId from orders where (agentId in (select pid from people where homeCity = 'Santa Monica')));
